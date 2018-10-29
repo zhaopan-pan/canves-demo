@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - geometry - cube</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0px;
+				/*background-color: #000000;*/
+				overflow: hidden;
+			}
+			.canvesDiv{
+				width:1000px;
+				height:900px;
+				margin: 0 auto;
+			}
+			#mainCanvas{
+				width:1000px;
+				height:900px;
+				/*background: #ccc;*/
+			}
+		</style>
+	</head>
+	<body>
+
+	<div class="canvesDiv" id="mainCanvas">
+	</div>
+
+	</body>
+	<script src="./util/three.js"></script>
+	<script src="http://techbrood.com/threejs/examples/js/controls/OrbitControls.js"></script>
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script src="./util/OBJLoader.js"></script>
+	<script src="./util/MTLLoader.js"></script>
+	<script src="http://techbrood.com/threejs/examples/js/controls/OrbitControls.js"></script>
+	<!--拖拽控件-->
+	<script src="./util/DragControls.js"></script>
+	<!--可视化平移控件-->
+	<script src="./util/TransformControls.js"></script>
+	<script>
+        // var camera, scene, renderer;
+        // var mesh;
+        // init();
+        // function init() {
+        // 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );  //远景相机
+        // 	camera.position.z = 400;
+        // 	scene = new THREE.Scene();
+        // 	var texture = new THREE.TextureLoader().load( './img/cabinet.jpg' );//纹理加载器
+        // 	var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );       //盒子缓存模型
+        // 	var material = new THREE.MeshBasicMaterial( { map: texture } );    //基础网孔材料
+        // 	mesh = new THREE.Mesh( geometry, material );
+        // 	scene.add( mesh );
+        // 	renderer = new THREE.WebGLRenderer( { antialias: true } );          //WebGL渲染器
+        // 	renderer.setPixelRatio( window.devicePixelRatio );                 //设置设备像素比。通常用于HiDPI设备防止模糊输出canvas。
+        // 	renderer.setSize( window.innerWidth, window.innerHeight );
+        // 	document.body.appendChild( renderer.domElement );
+        // 	//
+        // 	window.addEventListener( 'resize', onWindowResize, false );
+        // }
+        // function onWindowResize() {
+        // 	camera.aspect = window.innerWidth / window.innerHeight;
+        // 	camera.updateProjectionMatrix();  //更新相机投影矩阵，必须在参数发生变化后调用
+        // 	renderer.setSize( window.innerWidth, window.innerHeight );
+        // }
+        // function animate() {
+        // 	requestAnimationFrame( animate );
+        // 	// mesh.rotation.x += 0.005;
+        // 	// mesh.rotation.y += 0.01;
+        // 	renderer.render( scene, camera );
+        // }
+        // animate();
+        // //   鼠标缩放滚转零件
+        // var controls=new THREE.OrbitControls(camera);
+        // controls.addEventListener('change', animate);
+
+        var scene = null;
+        var camera = null;
+        var light = null;
+        // var renderer = null;
+
+        var mesh = null;
+        var id = null;
+        var canvasId=$("#mainCanvas");
+        var width=canvasId.width();
+        var height=canvasId.height();
+        function init() {
+            var renderer = new THREE.WebGLRenderer();   //渲染器
+            canvasId.append( renderer.domElement );
+            renderer.setSize(width, height);
+            renderer.setClearColor("#000",1);
+            scene = new THREE.Scene();//创建场景
+
+			var k=10;
+			camera=new THREE.OrthographicCamera(-width/k,width/k,height/k,-height/k,1,500);
+            camera.position.set(0, 0, 100);//相机位置
+            // camera.lookAt(new THREE.Vector3(0, 2, 0));//lookAt()设置相机所看的位置
+            scene.add(camera);//把相机添加到场景中
+
+
+            // 实例化一个加载器
+            // var loader = new THREE.TextureLoader();
+            // loader.load(
+            //     "./img/diban.jpg", //这个是相对位置也行
+            //     // "https://www.bootcdn.cn/assets/img/react.svg?1530947420051",//这个是网络位置也行 不过大部分写
+            //     function(texture) {
+            //         console.log(texture);
+            //         var planeGome = new THREE.PlaneBufferGeometry(12, 18,5);
+            //         //材料着色
+            //         var dibanMaterial = new THREE.MeshBasicMaterial({
+            //             color: "#ffffff",
+            //             map:texture,
+            //             transparent: true,
+            //         });
+            //         var  planeGomeCubes = new THREE.Mesh(planeGome, dibanMaterial);
+            //         planeGomeCubes.position.set(0,0,0);
+			// 		planeGomeCubes.scale.set(5,5,2);
+			// 		planeGomeCubes.rotation.set(1,-2,-1);
+            //         // scene.add(planeGomeCubes);
+            //         dibanMaterial.side = THREE.DoubleSide;//单面贴就删除
+            //     });
+
+            //创建地板
+            var loader = new THREE.TextureLoader();
+            var floor;
+                loader.load("./img/diban1.jpg",function(texture){
+                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                    texture.repeat.set( 10, 10 );
+                    var floorGeometry = new THREE.BoxGeometry(200, 150, 1);
+                    var floorMaterial = new THREE.MeshBasicMaterial( { map: texture, side: THREE.DoubleSide } );
+					floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                    floor.scale.set(0.8,0.8,0.8);
+                    floor.position.y = -20;
+                    floor.position.z = 10;
+                    floor.rotation.set(-1,0,1.1);
+                    // floor.rotation.y=Math.PI/3;
+                    // floor.rotation.y = 0.25*Math.PI;
+                    scene.add(floor);
+                });
+
+            // var planeGome = new THREE.BoxGeometry(12, 18,5);
+            // var planeGomeBg = new THREE.MeshBasicMaterial({
+            //     color:"#000",
+            //     // map:texture,
+            //     transparent:true
+            // } );
+            // var  planeGomeCubes = new THREE.Mesh(planeGome, planeGomeBg);
+            // scene.add(planeGomeCubes);
+
+            //光源
+            light = new THREE.AmbientLight(0xffffff);//光源颜色
+            light.position.set(30, 20, 5);//光源位置
+			scene.add(light);//光源添加到场景中
+
+
+            /**
+			 * 导入模型
+             * @type {THREE.MTLLoader}
+             */
+
+            //服务器
+            var loaderServiceMtl=new THREE.MTLLoader();
+            loaderServiceMtl.setPath("./service/");
+            loaderServiceMtl.load('service.mtl', function(obj) {//第一个表示模型路径，第二个表示完成导入后的回调函数，一般我们需要在这个回调函数中将导入的模型添加到场景中
+
+                console.log(obj);
+                // obj.position.set(0,0,0);
+                mesh = obj;//储存到全局变量中
+                var loaderServiceObj = new THREE.OBJLoader();//在init函数中，创建loader变量，用于导入模型
+                loaderServiceObj.setMaterials(obj);
+                loaderServiceObj.setPath("./service/");
+                loaderServiceObj.load('service.obj', function(objs) {//第一个表示模型路径，第二个表示完成导入后的回调函数，一般我们需要在这个回调函数中将导入的模型添加到场景中
+                    console.log(objs);
+                    objs.traverse(function(child) {
+                        if (child instanceof THREE.Mesh) {
+                            child.material.side = THREE.DoubleSide;
+                        }
+                    });
+
+                    objs.scale.x=0.5;
+                    objs.scale.y=0.5;
+                    objs.scale.z=0.5;
+                    objs.rotation.x = Math.PI/2;
+                    mesh = objs;//储存到全局变量中
+                    floor.add(objs);
+                    // scene.add(objs);//将导入的模型添加到场景中
+					console.log(scene);
+                    delayRender(mesh);
+                    render();
+                });
+            });
+
+            //机箱
+            var loaderCabinetMtl=new THREE.MTLLoader();
+            loaderCabinetMtl.setPath("./cabinet/");
+            loaderCabinetMtl.load('cabinet.mtl', function(obj) {//第一个表示模型路径，第二个表示完成导入后的回调函数，一般我们需要在这个回调函数中将导入的模型添加到场景中
+
+                console.log(obj);
+                // obj.position.set(0,0,0);
+                mesh = obj;//储存到全局变量中
+                // scene.add(obj);//将导入的模型添加到场景中
+                var loaderCabinetObj = new THREE.OBJLoader();//在init函数中，创建loader变量，用于导入模型
+                loaderCabinetObj.setMaterials(obj);
+                loaderCabinetObj.setPath("./cabinet/");
+                loaderCabinetObj.load('cabinet.obj', function(objs) {//第一个表示模型路径，第二个表示完成导入后的回调函数，一般我们需要在这个回调函数中将导入的模型添加到场景中
+                    console.log(objs);
+                    objs.traverse(function(child) {
+                        if (child instanceof THREE.Mesh) {
+                            child.material.side = THREE.DoubleSide;
+                        }
+                    });
+
+                    objs.scale.x=0.5;
+                    objs.scale.y=0.5;
+                    objs.scale.z=0.5;
+                    objs.rotation.x = Math.PI/2;
+                    // objs.position.set(1,-50,7);
+                    mesh = objs;//储存到全局变量中
+					floor.add(objs);//将导入的模型添加到场景中
+					console.log(scene);
+                    delayRender(mesh);
+                    render();
+                });
+            });
+
+
+
+
+            // id = setInterval(render, 20);//每隔20s重绘一次
+            function render() {
+                renderer.render(scene, camera);//调用WebGLRenderer的render函数刷新场景
+                // mesh.rotation.y += 0.01;//添加动画
+                // if (mesh.rotation.y > Math.PI * 2) {
+                //     mesh.rotation.y -= Math.PI * 2;
+                // }
+            }
+            render();
+
+            //   鼠标缩放滚转零件
+            var controls=new THREE.OrbitControls(camera);
+            controls.addEventListener('change', function(e){
+                // console.log(e);
+                render()
+			});
+
+            //延迟加载
+            function delayRender(objs){
+                // console.log(mesh);
+                if(objs){
+                    setTimeout(render,0.00001);
+                }
+            }
+        }
+        // 鼠标双击触发的方法
+        function onMouseDblclick(event) {
+
+            // 获取 raycaster 和所有模型相交的数组，其中的元素按照距离排序，越近的越靠前
+            var intersects = getIntersects(event);
+
+            // 获取选中最近的 Mesh 对象
+            if (intersects.length != 0 && intersects[0].object instanceof THREE.Mesh) {
+                selectObject = intersects[0].object;
+                changeMaterial(selectObject);
+            } else {
+                alert("未选中 Mesh!");
+            }
+        }
+
+        // 获取与射线相交的对象数组
+        function getIntersects(event) {
+            event.preventDefault();
+            console.log("event.clientX:" + event.clientX)
+            console.log("event.clientY:" + event.clientY)
+
+            // 声明 raycaster 和 mouse 变量
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+
+            // 通过鼠标点击位置,计算出 raycaster 所需点的位置,以屏幕为中心点,范围 -1 到 1
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            //通过鼠标点击的位置(二维坐标)和当前相机的矩阵计算出射线位置
+            raycaster.setFromCamera(mouse, camera);
+
+            // 获取与射线相交的对象数组，其中的元素按照距离排序，越近的越靠前
+            var intersects = raycaster.intersectObjects(scene.children);
+
+            //返回选中的对象
+            return intersects;
+        }
+
+
+        function initAll(){
+            init();
+		};
+        initAll();
+	</script>
+</html>

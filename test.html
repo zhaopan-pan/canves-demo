@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>My first Three.js app</title>
+    <style>
+        body { margin: 0;
+             }
+        canvas { width: 100%; height: 100%;background: antiquewhite}
+
+        #canvasId{
+            width: 100%;
+            height:1000px;
+        }
+    </style>
+</head>
+<body>
+<div id="canvasId">
+
+</div>
+</body>
+
+<script src="https://cdn.bootcss.com/three.js/92/three.js"></script>
+<script src="http://techbrood.com/threejs/examples/js/controls/OrbitControls.js"></script>
+<script src="./ThreeBSP.js"></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="./position.js"></script>
+<script src="./examples/dat.gui.min.js"></script>
+<script src="./util/CanvasRenderer.js"></script>
+<script src="./util/Projector.js"></script>
+<script src="./util/TrackballControls.js"></script>
+<script src="./util/stats.min.js"></script>
+<script src="./util/DragControls.js"></script>   //拖拽控件
+<script src="./util/TransformControls.js"></script>//可视化平移
+<script>
+    console.log(positionData);
+    function demo(){
+
+    var canvasId=$("#canvasId");
+    var width=canvasId.width();
+    var height=canvasId.height();
+    console.log(width,height);
+    var scene = new THREE.Scene();  //场景
+    var renderer = new THREE.WebGLRenderer();   //渲染器
+
+    canvasId.append( renderer.domElement );
+    renderer.setSize(width, height );
+    renderer.setClearColor(0xb9d3ff,1);
+
+    //正交相机
+    var k=10;
+    // var camera=new THREE.OrthographicCamera(-width/k,width/k,height/k,-height/k,1,1000);
+        var camera = new THREE.PerspectiveCamera( 90, width / height, 1, 1000 );
+    //设置摄像机的位置，并让其指向场景的中心（0,0,0）
+        camera.position.set(0,0,250);
+        camera.lookAt(scene.position);
+
+        // var frustumSize=1000;
+        // var aspect = window.innerWidth / window.innerHeight;
+        // camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 1000 );
+        // // camera.lookAt( scene.position );
+        // scene.add( camera );
+
+
+        // var camera = new THREE.PerspectiveCamera(90, width / height, 1, 1000 );
+        // camera.position.set(50, 50, 100);
+        // camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+
+    //添加环境光
+    //     var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.9);
+    //     directionalLight.position.set( 0, 1, 0 );
+    //     scene.add( directionalLight );
+
+
+
+    //机箱平面模型
+    var dcCabinet = new THREE.BoxBufferGeometry( 15, 5.8, -10 );
+    // var dcCabinet = new THREE.PlaneGeometry(28, 12.6);
+    var acCabinet = new THREE.BoxGeometry(15, 5.8, -10);
+    var batterys = new THREE.BoxGeometry(12, 28,10);
+    var batterys_row = new THREE.BoxGeometry( 28,10,12);
+
+    var kongtiao = new THREE.PlaneGeometry(12,8);
+
+
+    var planeGome = new THREE.PlaneGeometry(260, 120);
+        var planeGomeBg = new THREE.MeshBasicMaterial({
+            color:"#fff",
+            // map:texture,
+            transparent:true} );
+       var  planeGomeCubes = new THREE.Mesh(planeGome, planeGomeBg);
+        scene.add(planeGomeCubes);
+    //获取纹理里面的图片
+
+        // 实例化一个加载器
+        var loader = new THREE.TextureLoader();
+        loader.load(
+            "./img/kt.png", //这个是相对位置也行
+            // "https://www.bootcdn.cn/assets/img/react.svg?1530947420051",//这个是网络位置也行 不过大部分写
+            function(texture){
+                console.log(texture);
+                //材料着色
+                 var material = new THREE.MeshBasicMaterial({
+                     color:"#ffffff",
+                     // map:texture,
+                     transparent:true} );
+                material.side=THREE.DoubleSide;//单面贴就删除
+
+                 //加图
+                 var materials = new THREE.MeshBasicMaterial({
+                     color:"#000",
+                     map:texture,
+                     transparent:true} );
+
+                //设置模型位置
+                if(positionData.code==1){
+                    var dataList=positionData.dataList;
+                    for(var i=0;i<dataList.length;i++){
+                        var datas=dataList[i];
+                        /**
+                         * 直流柜
+                         * @type {THREE.PlaneGeometry}
+                         */
+                        if(datas.type=="dc_cabinet"){
+                            var dc_cabinetList=datas.dc_cabinet;
+                            for(var j=0;j<dc_cabinetList.length;j++) {
+                                var cabinets=dc_cabinetList[j];
+                                // console.log(cabinets);
+                                //承载平面的一个对象
+                                var cubes = "cube" + i;
+                                cubes = new THREE.Mesh(dcCabinet, material);
+                                cubes.position.x = cabinets.x;
+                                cubes.position.y = cabinets.y;
+                                // cubes.scale.z= 10;
+                                // cubes.position.z= 10;
+                                // scene.add(cubes);
+                                var border = new THREE.BoxHelper(cubes, "#dedada");
+                                scene.add(border);
+                            }
+                        }else
+                        /**
+                         * 交流柜
+                         * @type {THREE.PlaneGeometry}
+                         */
+
+                                if(datas.type=="ac_cabinet") {
+                                    var ac_cabinet = datas.ac_cabinet;
+                                    for (var j = 0; j < ac_cabinet.length; j++) {
+                                        var cabinets = ac_cabinet[j];
+                                        // console.log(cabinets);
+                                        //承载平面的一个对象
+                                        var cubes = "cube" + i;
+                                        cubes = new THREE.Mesh(acCabinet, material);
+                                        cubes.position.x = cabinets.x;
+                                        cubes.position.y = cabinets.y;
+                                        // scene.add(cubes);
+                                        var border = new THREE.BoxHelper(cubes, "#dedada");
+                                        scene.add(border);
+                                    }
+                        }else
+                        /**
+                         * 电池
+                         * @type {THREE.PlaneGeometry}
+                         */
+                        // console.log(datas)
+
+                                if(datas.type=="battery") {
+                                    var battery = datas.battery;
+                                    for (var j = 0; j < battery.length; j++) {
+                                        var cabinets = battery[j];
+                                        // console.log(cabinets);
+                                        if(cabinets.fx=="cloum"){
+                                            //承载平面的一个对象
+                                            var cubes = "cube" + i;
+                                            cubes = new THREE.Mesh(batterys, material);
+                                            cubes.position.x = cabinets.x;
+                                            cubes.position.y = cabinets.y;
+                                            // scene.add(cubes);
+                                            var border = new THREE.BoxHelper(cubes, "#dedada");
+                                            scene.add(border);
+                                        }else if(cabinets.fx=="row"){
+                                            //承载平面的一个对象
+                                            var cubes = "cube" + i;
+                                            cubes = new THREE.Mesh(batterys_row, material);
+                                            cubes.position.x = cabinets.x;
+                                            cubes.position.y = cabinets.y;
+                                            // scene.add(cubes);
+                                            var border = new THREE.BoxHelper(cubes, "#dedada");
+                                            scene.add(border);
+                                        }
+
+                                }
+                            }else
+
+                         /**
+                         * 空调
+                         * @type {THREE.PlaneGeometry}
+                         */
+                        // console.log(datas)
+
+                                if(datas.type=="kongtiao") {
+                                    var kongtiaoList = datas.kongtiao;
+                                    for (var j = 0; j < kongtiaoList.length; j++) {
+                                        var cabinets = kongtiaoList[j];
+                                        // console.log(cabinets);
+                                        if(cabinets.fx=="youshang"){
+                                            //承载平面的一个对象
+                                            var cubes = "cube" + i;
+                                            cubes = new THREE.Mesh(kongtiao, materials);
+                                            cubes.position.x = cabinets.x;
+                                            cubes.position.y = cabinets.y;
+                                            // cubes.rotation.y=1;
+                                            cubes.rotation.z=-0.6;
+                                            // console.log("asssad");
+                                            scene.add(cubes);
+                                        }else if(cabinets.fx=="zuoxia"){
+                                            //承载平面的一个对象
+                                            var cubes = "cube" + i;
+                                            cubes = new THREE.Mesh(kongtiao, materials);
+                                            cubes.position.x = cabinets.x+0;
+                                            cubes.position.y = cabinets.y-105;
+                                            // cubes.rotation.y=1;
+                                            cubes.rotation.z=-2.2;
+                                            // console.log("asssad");
+                                            scene.add(cubes);
+                                        }else{
+                                            //承载平面的一个对象
+                                            var cubes = "cube" + i;
+                                            cubes = new THREE.Mesh(kongtiao, materials);
+                                            cubes.position.x = cabinets.x;
+                                            cubes.position.y = cabinets.y;
+                                            scene.add(cubes);
+                                        }
+
+
+
+                                }
+                            }
+                    }
+                };
+                render()
+            }
+        );
+        var loader = new THREE.FontLoader();//新建字体对象
+        // var fontJsonUrl = './gentilis_regular.typeface.json'; //你的字体json路径，文件名规格随意
+        var fontJsonUrl = './Microsoft_YaHei_Regular.typeface.json'; //你的字体json路径，文件名规格随意
+        // 文字
+        var text1 = "直流电";  //直流电
+        var text2 = "交流电";// 交流电
+        var batteryText1 = "电"; //电池
+        var batteryText2 = "池"; //电池
+        loader.load( fontJsonUrl, function ( response ) {
+            // console.log(response);
+            var options = {
+                size: 2, //字号大小，一般为大写字母的高度
+                height: 7, //文字的厚度
+                weight: 'normal', //值为'normal'或'bold'，表示是否加粗
+                font: response, //字体，默认是'helvetiker'，需对应引用的字体文件
+                style: 'normal', //值为'normal'或'italics'，表示是否斜体
+                bevelThickness: 1, //倒角厚度
+                bevelSize: 1, //倒角宽度
+                curveSegments: 30,//弧线分段数，使得文字的曲线更加光滑
+                // bevelEnabled: true, //布尔值，是否使用倒角，意为在边缘处斜切
+            };
+            var dc_cabinet_text = new THREE.TextGeometry(text1, options);
+            var ac_cabinet_text = new THREE.TextGeometry(text2, options);
+            var batteryText_text1 = new THREE.TextGeometry(batteryText1, options);
+            var batteryText_text2 = new THREE.TextGeometry(batteryText2, options);
+            // var centerOffset = -0.5 * ( response.data.boundingBox.xMax - response.data.boundingBox.xMin );
+
+            var material = new THREE.MultiMaterial([
+                new THREE.MeshPhongMaterial( { color: "#ffffff", shading: THREE.FlatShading } ), // front
+                new THREE.MeshPhongMaterial( { color: "#ffffff", shading: THREE.SmoothShading } ) // side
+            ]);
+            //新建mesh,加入
+           // var  mesh = new THREE.Mesh( textGeo, material );
+            if(positionData.code==1){
+                var dataList=positionData.dataList;
+                for(var i=0;i<dataList.length;i++){
+                    var datas=dataList[i];
+                    // console.log(datas);
+                    //直流柜
+                    if(datas.type=="dc_cabinet") {
+                        for(var j=0;j<datas.dc_cabinet.length;j++){
+                            //承载平面的一个对象
+                            var mesh = "cube" + i;
+                            mesh = new THREE.Mesh(dc_cabinet_text, material);
+                            mesh.position.x = datas.dc_cabinet[j].x - 4;
+                            mesh.position.y = datas.dc_cabinet[j].y - 1;
+                            scene.add(mesh);
+                        }
+
+                    }
+
+                    //交流柜
+                    if(datas.type=="ac_cabinet"){
+                        // console.log(datas);
+                        // console.log(datas.ac_cabinet);
+                        for(var j=0;j<datas.ac_cabinet.length;j++){
+                            //承载平面的一个对象
+                            var mesh = "cube" + i;
+                            mesh = new THREE.Mesh(ac_cabinet_text, material);
+                            mesh.position.x = datas.ac_cabinet[j].x -5;
+                            mesh.position.y = datas.ac_cabinet[j].y - 1;
+                            scene.add(mesh);
+                        }
+                    }
+
+                    //电池
+                    if(datas.type=="battery"){
+                        // console.log(datas);
+                        // console.log(datas.battery);
+                        for(var j=0;j<datas.battery.length;j++){
+                            if(datas.battery[j].fx=="row"){
+                                //承载平面的一个对象
+                                var mesh = "cube" + i;
+                                mesh1 = new THREE.Mesh(batteryText_text1, material);//电
+                                mesh1.position.x = datas.battery[j].x - 8;
+                                mesh1.position.y = datas.battery[j].y -1;
+                                scene.add(mesh1);
+                                mesh2 = new THREE.Mesh(batteryText_text2, material);//池
+                                mesh2.position.x = datas.battery[j].x +1;
+                                mesh2.position.y = datas.battery[j].y - 1;
+                                scene.add(mesh2);
+                            }else{
+                                //承载平面的一个对象
+                                var mesh = "cube" + i;
+                                mesh1 = new THREE.Mesh(batteryText_text1, material);//电
+                                mesh1.position.x = datas.battery[j].x - 2;
+                                mesh1.position.y = datas.battery[j].y -1;
+                                scene.add(mesh1);
+                                mesh2 = new THREE.Mesh(batteryText_text2, material);//池
+                                mesh2.position.x = datas.battery[j].x - 2;
+                                mesh2.position.y = datas.battery[j].y - 6;
+                                scene.add(mesh2);
+                            }
+
+                        }
+                    }
+
+
+                }
+            };
+            render();
+        })
+
+    //添加对象（默认原点）
+    // plane.add(cube);
+    //将平面添加场景中
+
+
+    //用户交互插件 鼠标左键按住旋转，右键按住平移，滚轮缩放
+    // var controls;
+    function initControls() {
+
+        controls = new THREE.OrbitControls( camera);
+
+        // 如果使用animate方法时，将此函数删除
+        //controls.addEventListener( 'change', render );
+        // 使动画循环使用时阻尼或自转 意思是否有惯性
+        controls.enableDamping = false;
+        //动态阻尼系数 就是鼠标拖拽旋转灵敏度
+        //controls.dampingFactor = 0.25;
+        //是否可以缩放
+        controls.enableZoom = true;
+        //是否自动旋转
+        controls.autoRotate = false;
+        //设置相机距离原点的最远距离
+        controls.minDistance  = 100;
+        //设置相机距离原点的最远距离
+        controls.maxDistance  = 200;
+        //是否开启右键拖拽
+        controls.enablePan = true;
+    }
+
+
+
+    //   鼠标缩放滚转零件
+     var controls=new THREE.OrbitControls(camera);
+     controls.addEventListener('change', render);
+
+
+
+        //声明raycaster和mouse变量
+            var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        function onMouseClick( event ) {
+
+            //通过鼠标点击的位置计算出raycaster所需要的点的位置，以屏幕中心为原点，值的范围为-1到1.
+
+            mouse.x = ( event.clientX / width ) * 2 - 1;
+            mouse.y = - ( event.clientY / height ) * 2 + 1;
+
+            // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+            raycaster.setFromCamera( mouse, camera );
+            // console.log(scene.children);
+            // 获取raycaster直线和所有模型相交的数组集合
+            var intersects = raycaster.intersectObjects( scene.children);
+            console.log(intersects);
+
+            //将所有的相交的模型的颜色设置为红色，如果只需要将第一个触发事件，那就数组的第一个模型改变颜色即可
+            for ( var i = 0; i < intersects.length; i++ ) {
+                // console.log();
+                // console.log(intersects[ i ].point);
+                // intersects[ i ].object.geometry.parameters.text="点了";
+                // intersects[ i ].object.material.color.set( "#ccc" );
+                // console.log(intersects[ i ].object);
+                render()
+            }
+
+        }
+
+        document.addEventListener( 'mousedown', onMouseClick, false );
+
+        //渲染循环（render loop）
+        function render() {
+            // cube.rotation.x += 0.1;
+            // cube.rotation.y += 0.1;
+            // requestAnimationFrame( render );
+            // initControls();
+            renderer.render(scene, camera);
+        }
+
+        // 添加平移控件
+        var transformControls = new THREE.TransformControls(camera, renderer.domElement);
+        scene.add(transformControls);
+
+        // 过滤不是 Mesh 的物体,例如辅助网格
+        var objects = [];
+        for (var  i = 0; i < scene.children.length; i++) {
+            if (scene.children[i].isMesh) {
+                objects.push(scene.children[i]);
+            }
+        }
+        // 初始化拖拽控件
+        var dragControls = new THREE.DragControls(objects, camera, renderer.domElement);
+
+        // 鼠标略过事件
+        dragControls.addEventListener('hoveron', function (event) {
+            // 让变换控件对象和选中的对象绑定
+            transformControls.attach(event.object);
+        });
+        // 开始拖拽
+        dragControls.addEventListener('dragstart', function (event) {
+            controls.enabled = false;
+        });
+        // 拖拽结束
+        dragControls.addEventListener('dragend', function (event) {
+            controls.enabled = true;
+        });
+
+    }
+    // 初始化轨迹球控件
+    // function initControls() {
+    //     controls = new THREE.TrackballControls(camera, renderer.domElement);
+    //     // controls.noRotate = true;
+    //     controls.noPan = true;
+    //     // 视角最小距离
+    //     controls.minDistance = 1000;
+    //     // 视角最远距离
+    //     controls.maxDistance = 5000;
+    // }
+
+    function init(){
+        demo();
+        // initControls();
+    }
+    init();
+</script>
+</html>

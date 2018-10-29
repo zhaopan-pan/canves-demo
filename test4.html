@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./util/fabric.js"></script>
+</head>
+<body>
+<div style="margin: 0 auto; height:1050px;width:1400px;">
+    <canvas id="canvasId" width="1410" height="1050"></canvas>
+</div>
+<!--<img src="./img/jx.jpg" id="img"/>-->
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="./position.js"></script>
+<script type="text/javascript">
+    var canvas =new fabric.Canvas('canvasId',{
+    }); //利用fabric找到我们的画布
+    var canvasId=$("#canvasId");
+    var clientWidth=canvasId.width();
+    var clientHeight=canvasId.height();
+
+    console.log(clientHeight);
+    console.log(clientWidth);
+
+    /**
+     * 文字
+     * @param i
+     * @param top
+     * @param left
+     * @returns {*}
+     */
+    //odf架子
+    function odfText(i,top,left){
+        var a=i+1;
+        return (
+            i = new fabric.Text('odf架'+a,{
+                left:left,
+                top:top,
+                fontSize:18,
+                angle:90
+            })
+        )
+    }
+
+    //分光器
+    function fenguangText(i,top,left){
+        var a=i+1;
+        return (
+            i = new fabric.Text('分光器'+a,{
+                left:left,
+                top:top,
+                fontSize:18,
+            })
+        )
+    }
+
+    //直流电
+    function dc_cabinetsText(i,top,left){
+        var a=i+1;
+        return (
+            i = new fabric.Text('直流电'+a,{
+                left:left,
+                top:top,
+                fontSize:18,
+            })
+        )
+    }
+
+
+    //交流柜
+    function ac_cabinetsText(i,top,left){
+        var a=i+1;
+        return (
+            i = new fabric.Text('交流柜'+a,{
+                left:left,
+                top:top,
+                fontSize:18,
+            })
+        )
+    }
+
+    //电池
+    function batteryText(i,top,left,angle,jiaoliu){
+        var a=i+1;
+        // console.log(jiaoliu);
+        return (
+            i = new fabric.Text(jiaoliu?"交流配电箱":'电池'+a,{
+                left:left,
+                top:top,
+                fontSize:18,
+                angle:angle||""
+            })
+        )
+    }
+
+    //空调
+    function kongtiao_text(i,top,left,angle,text){
+        var a=i+1;
+        // console.log(jiaoliu);
+        return (
+            i = new fabric.Text(text||"空",{
+                // left:left,
+                // top:top,
+                fontSize:18,
+                angle:angle||""
+            })
+        )
+    }
+
+    //空调图片
+    function ktImg(arg,angle,callback){
+        return(
+            fabric.Image.fromURL('./img/kt.png',function(oImg) {
+                // console.log(oImg);
+                // oImg.width = 34;
+                // oImg.height = 24;
+                oImg.left = arg.left||0;
+                oImg.top = arg.top||0;
+                oImg.scaleX=2;
+                oImg.scaleY=2;
+                // canvas.add(oImg);
+                oImg.angle = angle||"";
+                //设置为当前选中
+                callback(oImg,arg)
+
+            })
+        )
+    }
+
+    //湿度控制图片
+    function sdImg(arg,angle,imgUrl,callback){
+        return(
+            fabric.Image.fromURL(imgUrl,function(oImg) {
+                // console.log(oImg);
+                // oImg.width = 34;
+                // oImg.height = 24;
+                oImg.left = arg.left||0;
+                oImg.top = arg.top||0;
+                oImg.scaleX=2;
+                oImg.scaleY=2;
+                oImg.set('selectable',false);
+                oImg.angle = angle||"";
+                //设置为当前选中
+                callback(oImg,arg)
+
+            })
+        )
+    }
+
+
+
+    //地板
+    var ban= new fabric.Rect({  //创建我们的正方形
+        width:1400,//
+        height:1050,//
+        fill:'#ccc',//填充颜色
+        left:0,//距离画布左侧的距离，单位是像素,
+        top:0,//距离画布上边的距离
+        stroke:"#ccc",  //边框
+        // strokeTop:"red",  //边框
+        strokeWidth:1,   //边框颜色
+        selectable:false,
+        BackgroundColor:"red",
+        b:2
+    });
+    canvas.add(ban);//把我们创建好的正方形加到画布上
+    //矩形
+    // function rect(){
+    console.log(positionDatas);
+    var dataList=positionDatas.dataList;
+    var index;
+
+
+    //矩形(竖
+    function rectVertical(i,top,left){
+       return (i= new fabric.Rect({  //创建我们的正方形
+            width:50,//
+            height:100,//
+            fill:'#ccc',//填充颜色
+            left:left,//距离画布左侧的距离，单位是像素,
+            top:top,//距离画布上边的距离
+            stroke:"black",  //边框
+            strokeTop:"red",  //边框
+            strokeWidth:1,   //边框颜色
+            selectable:false,
+        }))
+    }
+    //矩形(横
+    function rectRow(i,top,left){
+       return (i= new fabric.Rect({  //创建我们的正方形
+            width:100,//
+            height:50,//
+            fill:'#ccc',//填充颜色
+            left:left,//距离画布左侧的距离，单位是像素,
+            top:top,//距离画布上边的距离
+            stroke:"black",  //边框
+            strokeTop:"red",  //边框
+            strokeWidth:1,   //边框颜色
+            selectable:false,
+        }))
+    }
+
+    //矩形(横
+    function rectRow150(i,top,left){
+       return (i= new fabric.Rect({  //创建我们的正方形
+            width:150,//
+            height:50,//
+            fill:'#ccc',//填充颜色
+            left:left,//距离画布左侧的距离，单位是像素,
+            top:top,//距离画布上边的距离
+            stroke:"black",  //边框
+            strokeTop:"red",  //边框
+            strokeWidth:1,   //边框颜色
+            selectable:false,
+        }))
+    }
+
+    //门禁
+    function menjin() {
+        //不规则图形
+        var path = new fabric.Path('M 200 250 L 190 100 L 200 100 z');
+        var paths = new fabric.Path('M 190 250 L 190 100 L 200 100 z');
+        // var paths = new fabric.Path('M 150 250 L 150 100 L 210 110 z');
+        path.set({
+            left: 0,
+            top: 0,
+            fill:'',
+            stroke:"black",  //边框
+            strokeWidth:1,   //边框颜色
+        });
+        paths.set({
+            left: 0,
+            top: 0,
+            fill:'',
+            stroke:"black",  //边框
+            strokeWidth:1,   //边框颜色
+        });
+
+        var rectMenjin= new fabric.Rect({  //创建我们的正方形
+            width:10,//
+            height:150,//
+            fill:'',//填充颜色
+            stroke:"black",  //边框
+            strokeWidth:1,   //边框颜色
+            selectable:true,
+        });
+       var menjin_text = new fabric.Text("门禁",{
+            left:-10,
+            top:50,
+            fontSize:18,
+            angle:90
+        })
+    var groups = new fabric.Group([ path, paths,rectMenjin,menjin_text], {
+        left:1363,//距离画布左侧的距离，单位是像素,
+        top:200,//距离画布上边的距离
+    });
+    canvas.add(groups);
+
+    }
+    menjin();
+
+
+    //遍历数据
+    for(var h=0;h<dataList.length;h++){
+        var datas=dataList[h];
+        // console.log(datas);
+
+        //odf
+        if(datas.type=="odf"){
+            var odfList=datas.odf;
+            for(var j=0;j<odfList.length;j++){
+                var dc_cabinets=odfList[j];
+                // console.log(dc_cabinets);
+                var singleRect=rectVertical(j,dc_cabinets.top,dc_cabinets.left);
+                var singleOdfText=odfText(j,dc_cabinets.top+20,dc_cabinets.left+35);
+                var group = new fabric.Group([ singleRect, singleOdfText ], {
+                    selectable:false
+                });
+                canvas.add(group);//把我们创建好的正方形加到画布上
+                // canvas.add(singleOdfText);
+            }
+        }else
+
+            //分光器
+            if(datas.type=="fenguang"){
+                var fenguangList=datas.fenguang;
+                for(var j=0;j<fenguangList.length;j++){
+                    var dc_cabinets=fenguangList[j];
+                    // console.log(dc_cabinets);
+                    var singleRect=rectRow(j,dc_cabinets.top,dc_cabinets.left);
+                    var fenguangTexts=fenguangText(j,dc_cabinets.top+15,dc_cabinets.left+15);
+
+                    var group = new fabric.Group([ singleRect, fenguangTexts ], {
+                        // left:kt.groupLeft,
+                        // top: kt.groupTop,
+                        // width:200,
+                        // height:100
+                        // angle: -10
+                    });
+                    canvas.add(group);//把我们创建好的正方形加到画布上
+                    // canvas.add(fenguangTexts);//把我们创建好的正方形加到画布上
+                }
+            }else
+
+            //直流柜
+            if(datas.type=="dc_cabinet") {
+                var dc_cabinetList = datas.dc_cabinet;
+                for (var j = 0; j < dc_cabinetList.length; j++) {
+                    var dc_cabinets = dc_cabinetList[j];
+                    // console.log(dc_cabinets);
+                    var singleRect = rectRow(j, dc_cabinets.top, dc_cabinets.left);
+                    var dc_cabinetsTexts = dc_cabinetsText(j, dc_cabinets.top + 15, dc_cabinets.left + 15);
+                    var group = new fabric.Group([ singleRect, dc_cabinetsTexts ], {
+                        a:1
+                    });
+                    canvas.add(group);//把我们创建好的正方形加到画布上
+                    // canvas.add(dc_cabinetsTexts);//把我们创建好的正方形加到画布上
+                }
+            }else
+                //交流柜
+                if(datas.type=="ac_cabinet"){
+                    var ac_cabinetList = datas.ac_cabinet;
+                    for (var j = 0; j < ac_cabinetList.length; j++) {
+                        var ac_cabinets = ac_cabinetList[j];
+                        // console.log(dc_cabinets);
+                        var singleRect = rectRow(j, ac_cabinets.top, ac_cabinets.left);
+                        var ac_cabinetsTexts = ac_cabinetsText(j, ac_cabinets.top + 15, ac_cabinets.left + 15);
+                        var group = new fabric.Group([ singleRect, ac_cabinetsTexts ], {
+                        });
+                        canvas.add(group);//把我们创建好的正方形加到画布上
+                        // canvas.add(ac_cabinetsTexts);//把我们创建好的正方形加到画布上
+                    }
+                }else
+                    //电池
+                if(datas.type=="battery") {
+                    var batteryList = datas.battery;
+                    for (var j = 0; j < batteryList.length; j++) {
+                        var batterys = batteryList[j];
+                        if(batterys.fx=="vertical"){
+                            // console.log(dc_cabinets);
+                            var singleRect = rectVertical(j, batterys.top, batterys.left);
+                            var batteryTexts = batteryText(j, batterys.top + 25, batterys.left + 35,90);
+                            var group = new fabric.Group([ singleRect, batteryTexts ], {
+                            });
+                            canvas.add(group);//把我们创建好的正方形加到画布上
+                            // canvas.add(batteryTexts);//文字
+                        }
+                        if(batterys.fx=="row"){
+                            var singleRect = rectRow(j, batterys.top, batterys.left);
+                            var batteryTexts = batteryText(j, batterys.top + 15, batterys.left + 20);
+                            var group = new fabric.Group([ singleRect, batteryTexts ], {
+                            });
+                            canvas.add(group);//把我们创建好的正方形加到画布上
+                            // canvas.add(batteryTexts);//文字
+                        }
+                        if(batterys.fx=="big"){
+                            var singleRect = rectRow150(j, batterys.top, batterys.left);
+                            var batteryTexts = batteryText(j, batterys.top + 15, batterys.left + 25,"",1);
+                            var group = new fabric.Group([ singleRect, batteryTexts ], {
+                            });
+                            canvas.add(group);//把我们创建好的正方形加到画布上
+                        }
+                    }
+
+                }else
+                //空调
+                if(datas.type=="kongtiao"){
+                    var kongtiaoList = datas.kongtiao;
+                    for (var j = 0; j < kongtiaoList.length; j++) {
+                        var kongtiaos = kongtiaoList[j];
+                        // console.log(kongtiaos);
+                        if(kongtiaos.fx=="cloum"){
+                           ktImg(kongtiaos,"",function(callback,kt){  //当前原数据
+                                // console.log(kt);
+                                // console.log(kongtiaos);
+                                var kongtiaoText=kongtiao_text(j,kt.top,kt.left,"","空调检测");
+                                if(callback&&kongtiaoText){
+                                    var group = new fabric.Group([ callback, kongtiaoText ], {
+                                        left:kt.groupLeft,
+                                        top: kt.groupTop,
+                                        // width:200,
+                                        // height:100
+                                        // angle: -10
+                                    });
+                                }
+                                // canvas.setActiveObject(callback);
+                                canvas.add(group);
+                                // canvas.add(kongtiaoText);
+                            });
+                        }else if(kongtiaos.fx=="youshang"){
+                            ktImg(kongtiaos,45,function(callback,kt){ //当前原数据
+                                // console.log(callback);
+                                // canvas.setActiveObject(callback);
+                                var kongtiaoText_youshang=kongtiao_text(j,kt.top,kt.left,45,"空调检测");
+                                if(callback&&kongtiaoText_youshang){
+                                    var group = new fabric.Group([ callback, kongtiaoText_youshang], {
+                                        left:kt.groupLeft,
+                                        top: kt.groupTop,
+                                        // width:200,
+                                        // height:100
+                                        // angle: -10
+                                    });
+                                    canvas.add(group);
+                                }
+                            });
+                        } else if(kongtiaos.fx=="youxia"){
+                            ktImg(kongtiaos,135,function(callback,kt){
+                                // console.log(callback);
+                                var kongtiaoText_youxia=kongtiao_text(j,kt.top,kt.left,315,"空调检测");
+                                if(callback&&kongtiaoText_youxia){
+                                    var group = new fabric.Group([ callback, kongtiaoText_youxia], {
+                                        left:kt.groupLeft,
+                                        top: kt.groupTop,
+                                        // width:200,
+                                        // height:100
+                                        // angle: -10
+                                    });
+                                    canvas.add(group);
+                                }
+                            });
+                        }
+
+
+                    }
+                }else
+                    //湿度sdImg
+                    if(datas.type=="shidu"){
+                      var shiduDataList=datas.shidu;
+                      for (var j = 0; j < shiduDataList.length; j++) {
+                            var shiduDatas=shiduDataList[j];
+                      if(shiduDatas.fx=="top"){
+                          // console.log(dataList);
+                          sdImg(shiduDatas,180,'./img/shidu.png',function(callback,kt){
+                              // console.log(dataList);
+                              // console.log(kt);
+                              var kongtiaoText_youxia=kongtiao_text(j,kt.top,kt.left,0,"温室度检测");
+                              if(callback&&kongtiaoText_youxia){
+                                  var group = new fabric.Group([ callback, kongtiaoText_youxia], {
+                                      left:kt.groupLeft,
+                                      top: kt.groupTop,
+                                      // width:200,
+                                      // height:100
+                                      // angle: -10
+                                  });
+                                  canvas.add(group);
+                              }
+                              // canvas.add(kongtiaoText_youxia);
+                          });
+                      }else if(shiduDatas.fx=="bottom"){
+                          // console.log(dataList);
+                          sdImg(shiduDatas,0,'./img/shidu.png',function(callback,kt){
+                              // console.log(dataList);
+                              // console.log(kt);
+                              // kt.groupLeft==0?360:0,
+                              var kongtiaoText_youxia=kongtiao_text(j,kt.top,kt.left, kt.groupLeft==0?90:0,"温室度检测");
+                              if(callback&&kongtiaoText_youxia){
+                                  var group = new fabric.Group([ callback, kongtiaoText_youxia], {
+                                      left:kt.groupLeft,
+                                      top: kt.groupTop,
+                                      // width:200,
+                                      // height:100
+                                      // angle: kt.groupLeft==0?90:0
+                                  });
+                                  canvas.add(group);
+                              }
+                              // canvas.add(kongtiaoText_youxia);
+                          });
+                      }
+                  }
+                 }else
+                        //摄像头
+                        if(datas.type=="shexiang"){
+                            var shexiang_dataList=datas.shexiang;
+                        for (var j = 0; j < shexiang_dataList.length; j++) {
+                        var shexiangDatas=shexiang_dataList[j];
+                        // console.log(shexiangDatas);
+                        var scale=0;
+                        var scaleText=0;
+                        if(shexiangDatas.fx=="top"){
+                            scale=180
+                        }else if(shexiangDatas.fx=="heng"){
+                            scale=-90;
+                            scaleText=90;
+                        }else if(shexiangDatas.fx=="youxia"){
+                            scale=135;
+                        }
+
+                            shexiangDatas.scaleText=scaleText
+                            sdImg(shexiangDatas,scale,'./img/sx.png',function(callback,kt){
+                                // console.log(dataList);
+                                // console.log(kt);
+                                var kongtiaoText_youxia=kongtiao_text(j,kt.top,kt.left,kt.scaleText||0,"摄像"+j);
+                                if(callback&&kongtiaoText_youxia){
+                                    var group = new fabric.Group([ callback, kongtiaoText_youxia], {
+                                        left:kt.groupLeft,
+                                        top: kt.groupTop,
+                                        // width:200,
+                                        // height:100
+                                        // angle: -10
+                                    });
+                                    canvas.add(group);
+                                }
+                                // canvas.add(kongtiaoText_youxia);
+                            });
+                        }
+                        }else
+                            //yangan
+                        if(datas.type=="yangan"){
+                            var yangan_dataList=datas.yangan;
+                            for (var j = 0; j < yangan_dataList.length; j++) {
+                                var yanganDatas = yangan_dataList[j];
+                                sdImg(yanganDatas,0,'./img/yangan.png',function(callback,kt){
+                                    // console.log(dataList);
+                                    // console.log(kt);
+                                    var yanganText=kongtiao_text(j,kt.top,kt.left,0,"烟感"+j);
+                                    if(callback&&yanganText){
+                                        var group = new fabric.Group([ callback, yanganText], {
+                                            left:kt.groupLeft,
+                                            top: kt.groupTop,
+                                            // width:200,
+                                            // height:100
+                                            // angle: -10
+                                        });
+                                        canvas.add(group);
+                                    }
+                                    // canvas.add(kongtiaoText_youxia);
+                                });
+                            }
+                            }
+
+    }
+
+
+
+    //监听事件
+    canvas.on({
+        //选中
+        'object:selected': function(e) {
+            console.log("获取焦点");
+            // e.e.angle = 40;
+            console.log(e);
+            this.a=false;
+            // console.log(e.target);
+            // if(e.e){
+            //     // e.target.angle = 40;
+            //     e.target.animate('angle',e.target.angle-20,{onChange:canvas.renderAll.bind(canvas),duration: 200,})
+            //
+            // }
+        },
+        //失去焦点
+        'selection:cleared': function(e) {
+            // console.log("失去焦点");
+            // console.log(e);
+            ca = canvas.getActiveObject();
+            canvas.remove(ca);
+            canvas.renderAll();
+        },
+        'mouse:wheel':function(opt){
+            // console.log(opt);
+            var delta = opt.e.deltaY;
+            var zoom = canvas.getZoom();
+            // console.log(zoom);
+            if(zoom>=0.5&&zoom<=5){
+                zoom = zoom + delta / 1000;
+                change(zoom);
+            }else{
+                console.info(zoom)
+                if (zoom<0.5){
+                    change(0.5);
+                }else  if(zoom >5){
+                    change(5);
+                }
+            }
+      function  change(zoom) {
+          // if(zoom> 20)zoom = 20;
+          // if(zoom <0.01)zoom = 0.01;
+          canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+
+      }
+            opt.e.preventDefault();
+            opt.e.stopPropagation();
+        },
+        'mouse:down': function(opt) {
+            var evt = opt.e;
+            if (evt.altKey === true) {
+                // if(this.a){
+                this.isDragging = true;
+                // }
+                this.selection = false;
+                this.lastPosX = evt.clientX;
+                this.lastPosY = evt.clientY;
+            }
+        },
+        'mouse:up': function(opt) {
+            this.isDragging = false;
+            this.selection = true;
+        },
+        'mouse:move':function(opt) {
+            if (this.isDragging) {
+                var e = opt.e;
+                this.viewportTransform[4] += e.clientX - this.lastPosX;
+                this.viewportTransform[5] += e.clientY - this.lastPosY;
+                this.requestRenderAll();
+                this.lastPosX = e.clientX;
+                this.lastPosY = e.clientY;
+                // opt.e.preventDefault();
+                // opt.e.stopPropagation();
+            }
+        }
+    });
+
+
+    function selected(cb){
+            canvas.on('object:selected', function(e) {
+            console.log("获取焦点");
+            // e.e.angle = 40;
+            // console.log(e);
+            this.a=false;
+            cb(e);
+            // console.log(e.target);
+            // if(e.e){
+            //     // e.target.angle = 40;
+            //     e.target.animate('angle',e.target.angle-20,{onChange:canvas.renderAll.bind(canvas),duration: 200,})
+            //
+            // }
+        })
+    }
+
+</script>
+</html>
